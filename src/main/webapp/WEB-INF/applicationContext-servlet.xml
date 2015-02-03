@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans 
+    xmlns="http://www.springframework.org/schema/beans" 
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:p="http://www.springframework.org/schema/p" 
+    xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:mvc="http://www.springframework.org/schema/mvc"
+    xmlns:websocket="http://www.springframework.org/schema/websocket"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans 
+    http://www.springframework.org/schema/beans/spring-beans-4.1.xsd
+    http://www.springframework.org/schema/context 
+    http://www.springframework.org/schema/context/spring-context-4.1.xsd
+	http://www.springframework.org/schema/mvc
+    http://www.springframework.org/schema/mvc/spring-mvc-4.1.xsd
+    http://www.springframework.org/schema/websocket
+	http://www.springframework.org/schema/websocket/spring-websocket-4.1.xsd">
+    
+    <context:annotation-config/>
+    
+    <!-- Enables the Spring MVC @Controller programming model -->
+    <mvc:annotation-driven /> 
+    <bean id="mappingJacksonHttpMessageConverter" class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter"/>
+	<bean class ="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter" >
+		<property name="messageConverters">  
+	  		<list>  
+	   			<ref bean="mappingJacksonHttpMessageConverter" /> 
+	  		</list>  
+ 		</property> 
+	</bean> 
+	
+    <context:component-scan base-package="cn.com"/>
+  	 
+	<bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">  
+	    <property name="viewClass" value="org.springframework.web.servlet.view.JstlView"/>  
+	    <property name="prefix" value="/view/"/>  
+	    <property name="suffix" value=".jsp"/>  
+	</bean>      
+	
+	<!-- websocket消息处理bean -->
+	<bean id="HelloHandler" class="cn.com.websocket.hello.HelloHandler"/>
+	<websocket:handlers>
+		<!-- 配置消息处理bean和路径的映射关系 -->
+		<websocket:mapping path="/hello/nickname/{nickName}" handler="HelloHandler"/>
+		<!-- 配置握手拦截器 -->
+		<websocket:handshake-interceptors>
+			<bean class="cn.com.websocket.hello.HandShakeInterceptor"/>
+		</websocket:handshake-interceptors>
+		<!-- 开启sockjs，去掉则关闭sockjs -->
+		<websocket:sockjs/>
+	</websocket:handlers>
+	<!-- 配置websocket消息的最大缓冲区长度 -->
+	<bean class="org.springframework.web.socket.server.standard.ServletServerContainerFactoryBean">
+		<property name="maxTextMessageBufferSize" value="8192"/>
+		<property name="maxBinaryMessageBufferSize" value="8192"/>
+	</bean>
+</beans>
